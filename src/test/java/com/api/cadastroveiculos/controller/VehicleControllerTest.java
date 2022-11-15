@@ -54,7 +54,7 @@ class VehicleControllerTest {
     static Vehicle generateRandomTestVehicle(){
         Vehicle vehicle = new Vehicle();
         vehicle.setVeiculo("veiculo "+String.valueOf((int) Math.random()));
-        vehicle.setMarca("marca "+String.valueOf((int) Math.random()));
+        vehicle.setMarca("Fiat");
         vehicle.setAno((int) Math.random());
         vehicle.setDescricao("");
         vehicle.setVendido( (((int)Math.random()) % 2) != 0);
@@ -126,6 +126,16 @@ class VehicleControllerTest {
     void addVehile() throws Exception {
         String testURL = "/veiculos";
 
+        Vehicle vehicleMarcaInvalida = VehicleControllerTest.generateRandomTestVehicle();
+        vehicleMarcaInvalida.setMarca("marcaInvalida");
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post(testURL).contentType(APPLICATION_JSON)
+                        .content(VehicleControllerTest.convertVehicleAsPayload(vehicleMarcaInvalida))
+        ).andExpect(
+                status().isBadRequest()
+        );
+
         Vehicle vehicle = VehicleControllerTest.generateRandomTestVehicle();
         String payload = VehicleControllerTest.convertVehicleAsPayload(vehicle);
 
@@ -154,18 +164,28 @@ class VehicleControllerTest {
         this.insertTestVehicle(vehicle);
         VehicleControllerTest.vehicleSequentialIDs += 1;
 
+
         Vehicle vehicle2 = new Vehicle();
         vehicle2.setVeiculo("Palio");
-        vehicle2.setMarca("Fiat");
+        vehicle2.setMarca("marcaInvalida");
         vehicle2.setAno(2010);
         vehicle2.setDescricao("Veiculo 1.0 Manual");
         vehicle2.setVendido(true);
         vehicle2.setCor("Prata");
 
-        String payload2 = VehicleControllerTest.convertVehicleAsPayload(vehicle2);
 
         mockMvc.perform(
-                MockMvcRequestBuilders.put(testURL).contentType(APPLICATION_JSON).content(payload2)
+                MockMvcRequestBuilders.put(testURL).contentType(APPLICATION_JSON)
+                        .content(VehicleControllerTest.convertVehicleAsPayload(vehicle2))
+        ).andExpect(
+                status().isBadRequest()
+        );
+
+        vehicle2.setMarca("Fiat");
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put(testURL).contentType(APPLICATION_JSON)
+                        .content(VehicleControllerTest.convertVehicleAsPayload(vehicle2))
         ).andExpect(
                 status().isOk()
         );
@@ -178,10 +198,10 @@ class VehicleControllerTest {
         Vehicle originalVehicle = VehicleControllerTest.generateTestVehicle();
         Vehicle modifiedVehicle = VehicleControllerTest.generateTestVehicle();
         modifiedVehicle.setVendido(!modifiedVehicle.getVendido());
-        String modifiedVehiclePayload = VehicleControllerTest.convertVehicleAsPayload(modifiedVehicle);
 
         mockMvc.perform(
-                MockMvcRequestBuilders.patch(testURL).contentType(APPLICATION_JSON).content(modifiedVehiclePayload)
+                MockMvcRequestBuilders.patch(testURL).contentType(APPLICATION_JSON)
+                        .content(VehicleControllerTest.convertVehicleAsPayload(modifiedVehicle))
         ).andExpect(
                 status().isNotFound()
         );
@@ -189,8 +209,18 @@ class VehicleControllerTest {
         this.insertTestVehicle(originalVehicle);
         VehicleControllerTest.vehicleSequentialIDs += 1;
 
+        Vehicle vehicleMarcaInvalida = VehicleControllerTest.generateRandomTestVehicle();
+        vehicleMarcaInvalida.setMarca("marcaInvalida");
         mockMvc.perform(
-                MockMvcRequestBuilders.patch(testURL).contentType(APPLICATION_JSON).content(modifiedVehiclePayload)
+                MockMvcRequestBuilders.patch(testURL).contentType(APPLICATION_JSON)
+                        .content(VehicleControllerTest.convertVehicleAsPayload(vehicleMarcaInvalida))
+        ).andExpect(
+                status().isBadRequest()
+        );
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch(testURL).contentType(APPLICATION_JSON)
+                        .content(VehicleControllerTest.convertVehicleAsPayload(modifiedVehicle))
         ).andExpect(
                 status().isOk()
         );

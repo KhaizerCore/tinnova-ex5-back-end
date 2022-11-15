@@ -2,6 +2,7 @@ package com.api.cadastroveiculos.controller;
 
 import com.api.cadastroveiculos.model.Vehicle;
 import com.api.cadastroveiculos.repository.VehicleRepository;
+import com.api.cadastroveiculos.service.Validacao;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.Optional;
 @ResponseBody
 @RequestMapping("/veiculos")
 public class VehicleController {
+
     @Autowired
     private VehicleRepository vehicleRepository;
 
@@ -31,6 +33,7 @@ public class VehicleController {
 
     @GetMapping(params = {"marca", "ano", "cor"})
     public ResponseEntity getFilteredVehicles(@RequestParam String marca, @RequestParam int ano, @RequestParam String cor){
+        if (!Validacao.validaMarca(marca)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Marca invalida");
         if (vehicleRepository.findByMarcaAndAnoAndCor(marca, ano, cor).isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Veiculo nao encontrado");
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRepository.findByMarcaAndAnoAndCor(marca, ano, cor));
     }
@@ -45,15 +48,17 @@ public class VehicleController {
     @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping()
     public ResponseEntity addVehile(@RequestBody Vehicle vehicle){
+        if (!Validacao.validaMarca(vehicle.getMarca())) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Marca invalida");
         return ResponseEntity.status(HttpStatus.CREATED).body(vehicleRepository.save(vehicle));
     }
 
     @Transactional
     @PutMapping(value = {"/{id}"})
     public ResponseEntity updateVehicleData(@PathVariable("id") Long id, @RequestBody @Valid Vehicle vehicle){
-
         Optional<Vehicle> vehicleModelOptional = vehicleRepository.findById(id);
         if (!vehicleModelOptional.isPresent()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Veiculo nao encontrado");
+
+        if (!Validacao.validaMarca(vehicle.getMarca())) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Marca invalida");
 
         vehicle.setId(id);
         vehicle.setCreated(vehicleModelOptional.get().getCreated());
@@ -69,7 +74,10 @@ public class VehicleController {
 
         var vehicleModel = vehicleModelOptional.get();
         if (vehicle.getVeiculo() != null) vehicleModel.setVeiculo(vehicle.getVeiculo());
-        if (vehicle.getMarca() != null) vehicleModel.setMarca(vehicle.getMarca());
+        if (vehicle.getMarca() != null) {
+            if (!Validacao.validaMarca(vehicle.getMarca())) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Marca invalida");
+            vehicleModel.setMarca(vehicle.getMarca());
+        }
         if (vehicle.getAno() != null) vehicleModel.setAno(vehicle.getAno());
         if (vehicle.getDescricao() != null) vehicleModel.setDescricao(vehicle.getDescricao());
         if (vehicle.getVendido() != null) vehicleModel.setVendido(vehicle.getVendido());
