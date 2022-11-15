@@ -31,19 +31,21 @@ public class VehicleController {
 
     @GetMapping(params = {"marca", "ano", "cor"})
     public ResponseEntity getFilteredVehicles(@RequestParam String marca, @RequestParam int ano, @RequestParam String cor){
-        return ResponseEntity.ok(vehicleRepository.findByMarcaAndAnoAndCor(marca, ano, cor));
+        if (vehicleRepository.findByMarcaAndAnoAndCor(marca, ano, cor).isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Veiculo nao encontrado");
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRepository.findByMarcaAndAnoAndCor(marca, ano, cor));
     }
 
     @GetMapping(value = {"/{id}"})
     public ResponseEntity getVehicleDetails(@PathVariable("id") Long id){
-        return ResponseEntity.ok(vehicleRepository.findById(id));
+        if (!vehicleRepository.findById(id).isPresent()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Veiculo nao encontrado");
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRepository.findById(id));
     }
 
     @Transactional
     @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping()
     public ResponseEntity addVehile(@RequestBody Vehicle vehicle){
-        return ResponseEntity.ok(vehicleRepository.save(vehicle));
+        return ResponseEntity.status(HttpStatus.CREATED).body(vehicleRepository.save(vehicle));
     }
 
     @Transactional
@@ -56,7 +58,7 @@ public class VehicleController {
         vehicle.setId(id);
         vehicle.setCreated(vehicleModelOptional.get().getCreated());
 
-        return ResponseEntity.ok(vehicleRepository.save(vehicle));
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRepository.save(vehicle));
     }
 
     @Transactional
@@ -73,7 +75,7 @@ public class VehicleController {
         if (vehicle.getVendido() != null) vehicleModel.setVendido(vehicle.getVendido());
         if (vehicle.getCor() != null) vehicleModel.setCor(vehicle.getCor());
 
-        return ResponseEntity.ok(vehicleRepository.save(vehicleModel));
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRepository.save(vehicleModel));
     }
 
     @Transactional
