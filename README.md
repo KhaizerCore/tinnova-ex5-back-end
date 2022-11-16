@@ -1,8 +1,14 @@
-# tinnova-ex5-back-end
+# 1 
+## tinnova-ex5-back-end
 
-# Code was developed using java jdk-14.0.2
+# 2
+## Code was developed using java jdk-14.0.2
 
-# Marcas que podem ser utilizadas (Case sensitive):
+# 3
+## In order to run the unit tests, please run VehicleControllerTest class test
+
+# 4
+## Marcas que podem ser utilizadas (Case sensitive):
 ### - Volkswagen
 ### - Chevrolet
 ### - Fiat
